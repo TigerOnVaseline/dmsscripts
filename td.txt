@@ -1,0 +1,96 @@
+Print   '                    TIDYDISK '
+send sink
+%
+% This housekeeping program is designed to remove duplicate patch files from
+% the DDU patch volumes. Each deletion will require the user to confirm.
+% This program is only for the use of NSC personnel
+%         PLEASE DO NOT MODIFY THIS PROGAM IN ANY WAY
+%
+quit all                 % clear display return to CI level
+listsf all               % list storefile into user directory
+erase duplicate          % clear variables
+erase yes
+erase no
+erase y
+erase n
+erase rusure
+erase volname
+%                        % Define variables
+command yes (ef duplicate;read previous)
+command y  (ef duplicate;read previous)
+command no (print 'No action taken ';read previous)
+command n  (print 'No action taken ';read previous)
+command rusure ( @1->duplicate ; print 'Are you sure you want to erase ' +
+ (parname @1) ; read input )
+erasesf duplotemp             % clear temporary file
+send previous
+PRINT ''
+PRINT 'Please let this program run to completion. Do not attempt to abort '
+PRINT 'If you don''t want to make changes then just say no. '
+PRINT 'It is the users responsibility to confirm deletions.'
+dskut
+print '   TIDYDISK  part 1 LOADING d000patch PLEASE WAIT  '
+send sfdev duplotemp          % places the directory of a patch volume...
+liv d000patch all             % into a file called duplotemp
+send previous
+send sink;listsf                     % refreshes the user directory
+edit duplotemp                       % opens file for editing
+end;line->fsize;top;down                    % determine size of file
+repeat fsize (linestr->sline;if((strsize sline) < 52) +
+   then(delete;)else(down;);)               % delete lines less than 52 chars
+end;line->fsize;top;down                    % determine new size of file
+repeat fsize (linestr->sline;if((substr sline 37 15) = ('Older Duplicate')) +
+   then(down;) else (delete;);)             % delete lines that do not
+                                            % contain 'Older Duplicate'
+top
+while (down '') (change 'Older Duplicate' ' ')
+top
+while (down '') (change '' 'rusure ')
+input 'print ''All duplicate files found on d000patch have been presented''
+top
+input 'print ''Duplicate files found on d000patch will be presented ''
+input 'print ''When asked for confirmation, answer y/n or yes/no''
+file sfdev
+send previous
+send sink;listsf;send previous    % refresh user directory
+read duplotemp
+erasesf duplotemp                 % clear temporary file
+%                Part 2
+print ''
+print '   TIDYDISK  part 2 LOADING d010patch PLEASE WAIT  '
+send sfdev duplotemp          % places the directory of a patch volume...
+  liv d010patch all           % into a file called duplotemp
+send previous
+send sink;listsf                     % refreshes the user directory
+edit duplotemp                       % opens file for editing
+end;line->fsize;top;down                    % determine size of file
+repeat fsize (linestr->sline;if((strsize sline) < 52) +
+   then(delete;)else(down;);)               % delete lines less than 52 chars
+end;line->fsize;top;down                    % determine new size of file
+repeat fsize (linestr->sline;if((substr sline 37 15) = ('Older Duplicate')) +
+   then(down;) else (delete;);)             % delete lines that do not
+                                            % contain 'Older Duplicate'
+top
+while (down '') (change 'Older Duplicate' ' ')
+top
+while (down '') (change '' 'rusure ')
+input 'print ''All duplicate files found on d010patch have been presented''
+top
+input 'print ''Duplicate files found on d010patch will be presented ''
+input 'print ''When asked for confirmation, answer y/n or yes/no''
+file sfdev
+send previous
+send sink;listsf;send previous    % refresh user directory
+read duplotemp
+erasesf duplotemp
+erase y
+erase n
+erase yes
+erase no
+erase rusure
+print ' '
+print 'Both patch volumes have been processed but please note that the program'
+print 'will remove only one instance of a duplicate file. '
+print 'If a file had more than one duplicate then run this program again.'
+quit all
+

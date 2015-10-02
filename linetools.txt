@@ -1,0 +1,57 @@
+send sink
+% LINETOOLS
+% version 1.2
+% This profile is designed to provide very restricted access to LTP commands
+% xxx users of this profile require a privclass of 9 and only 9
+% Note the "PROFILE" command itself requires privclass of 0 this privclass should
+% be removed from the user once the profile has been set.
+% LINETOOLS uses dump unsafe commands and should not be used between 21:55 and 23:00hrs
+% Please refer any queries regarding the operation of this program to the NSC
+%
+directory linetools
+attach linetools
+erase dnfbs
+erase goltp
+erase forcebusy
+erase linestate
+erase busy
+erase rets
+erase fbusyX
+send previous
+COMMAND lt (PRINT 'LINETOOLS:')
+PRINT 'Type HELPSTATE for linestate details'
+PRINT 'Type HELPTOOLS for commands'
+PRINT ' ';
+PRINT 'Linestate does not remain live. ';
+PRINT 'To see changes in line state you must repeat the linestate command. ';
+%
+COMMAND helpSTATE ( PRINT 'STATE    meaning';
+               PRINT 'IDL      Okay,  no call in progress  ';
+               PRINT 'CPB      Call probably in progress / faulty if CPB from rets ';
+               PRINT '         DO NOT Forcebusy a line in the CPB state';
+               PRINT 'BSY INB  Line not put into service ';
+               PRINT 'MB       Manually busy  ';
+               PRINT 'PLO      Permanent loop ';
+               PRINT 'SB       System busy    ';lt;)
+%
+COMMAND helpTOOLS ( PRINT 'COMMAND             meaning';
+               PRINT 'LINESTATE  XXXXXXX  Displays the state of line XXXXXXX';
+               PRINT 'BUSY  XXXXXXX       Takes line XXXXXXX out of service ';
+               PRINT 'FORCEBUSY XXXXXXX   Forces the line XXXXXXX into the MB state';
+               PRINT 'RETS XXXXXXX        Attempts to return line XXXXXXX to service';HQDN)
+COMMAND HQDN  (PRINT 'QDN XXXXXXX         Displays directory number details';
+        PRINT 'QLEN HOST/MUXS XX X XX XX    Displays line equipment details';
+        PRINT 'ABORT               IF YOU GET STUCK';lt)
+%
+COMMAND dnfbs     (send sink;'UNSPECIFIED LINE'->dnfb;erase yes;erase no;send previous)
+COMMAND goltp     (mapci nodisp;mtc;lns;ltp;)
+COMMAND forcebusy (dnfbs;send sink;@1->dnfb;
+                   If (dnfb ^= 'UNSPECIFIED LINE') then (COMMAND yes (fbusyX dnfb));
+                   COMMAND no  (Print 'No action taken';lt);
+                   send previous;
+                   Print ' Never FORCEBUSY a line that is in the CPB state ';
+                   Print ' Are you sure you want to forcebusy?' dnfb ' yes/no ';)
+COMMAND linestate (send sink;@1->dnq;goltp;send previous;post d dnq PRINT;quit mapci;dnfbs;lt;)
+COMMAND busy      (send sink;@1->dnq;goltp;post d dnq;bsy;send previous;post d dnq PRINT;quit mapci;dnfbs;lt;)
+COMMAND fbusyX    (send sink;@1->dnq;goltp;post d dnq;frls;send previous;post d dnq PRINT;quit mapci;dnfbs;lt;)
+COMMAND rets      (send sink;@1->dnq;goltp;post d dnq;rts;send previous;sleep 4;post d dnq PRINT;quit mapci;dnfbs;lt;)

@@ -1,0 +1,31 @@
+send sink
+ % PERMISSIONS
+ % THIS FILE CONTAINS THE PERMISSIONS FOR USER TYPES IN A COMMAND FORM
+ % USER MUST BE ADMIN
+ % uname MUST BE AN EXISTING USER
+ listsf all
+ erase PN PS PP PV PE PL PC PD PT
+ send previous
+ %
+ print 'PN uname     permit as Network Operations user'
+ print 'PS uname     permit as Switch user'
+ print 'PP uname     permit as Provisioning user'
+ print 'PV uname     permit as Provisioning tool (Viper)'
+ print 'PE uname     permit as Planning and Engineering'
+ print 'PL uname     permit as for LINETOOLS (DESPATCH)'
+ print 'PC uname     permit as CDC user'
+ print 'PD uname     permit as Digitech'
+ print 'PT uname     permit as TAS'
+ %
+ send sink
+ command PN (permit @1 4 7000 ENGLISH 0 1 2 3 4 5 6 10 11 13 16 17 20 21 23 24 25)
+ command PS (permit @1 4 7000 ENGLISH 0 1 2 3 4 5 6 10 11 13 16 17 20 21 23)
+ command PP (permit @1 4 7000 ENGLISH 0 1 2 3 5 10 11 12 13 17 20 21 22 23)
+ command PV (permit @1 4 5000 ENGLISH 0 1 2 5 10 12 20 21 22)
+ command PE (permit @1 4 5000 ENGLISH 1 5 20)
+ command PL (permit @1 4 5000 ENGLISH 9)
+ command PC (permit @1 4 5000 ENGLISH 14)
+ command PD (permit @1 4 5000 ENGLISH 0 1 2 5)
+ command PT (permit @1 4 7000 ENGLISH 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29)
+ send previous
+ 

@@ -1,0 +1,26 @@
+send sink
+% This program posts all the system busy lines
+% on the switch.
+% It then determines the number of lines posted
+% It then busies and returns each line to service.
+% It then returns the user to the CI prompt
+% PLEASE DO NOT MODIFY THIS PROGRAM IN ANY WAY
+%
+listsf all
+erasesf sbsylines
+send sfdev sbsylines
+quit all;mapci nodisp;mtc;lns;ltp;post s sb print
+send previous
+edit sbsylines
+end; linestr->lastline
+quit
+strsize lastline -> ssize
+if (ssize < 38) then ('0'->num) else +
+    (substr lastline 38 (ssize-38) -> num)
+(decstrtonum num) -> nlines
+repeat nlines (bsy;rts;next)
+erasesf sbsylines
+quit all
+send previous
+print 'The number of lines found system busy and restored = ' nlines
+

@@ -1,0 +1,49 @@
+send sink
+% IMAGIC - AUTOMATED IMAGE BACKUP
+% version 1.3  EURO 004 compatible
+% This program creates a file 'IM_BAT' that contains the commands
+% that will back up the MS and CM Images.
+listsf all
+erase SUCCIMG LASTIMG TAPENAME MSFILE CMFILE TAPEDEST IMGVOL
+erasesf IMAGINE ; erasesf ADFILE
+erasesf IM_BAT
+send previous
+send sfdev adfile
+autodump status
+send previous
+send sink;listsf;send previous
+edit adfile
+top;down 'Volume';substr (linestr) 11 8 -> IMGVOL
+top;down 'Successful';substr (linestr) 18 16 -> SUCCIMG
+top;down 'Last';substr (linestr) 12 16 -> LASTIMG
+quit
+send sfdev imagine
+diskut
+lf (strtosym IMGVOL)
+send previous
+send sink
+edit imagine
+top;down 'volume';substr (linestr) 28 3 -> tapedest
+tapedest+'T'->tapedest
+top;down 'MS';substr (linestr) 0 16 -> MSFILE
+% TAPENAME is IM followed by Month and Day,ie ; IMmmdd
+substr (linestr) 3 4 -> TAPENAME;'IM'+TAPENAME -> TAPENAME
+top;down 'CM';substr (linestr) 0 16 -> CMFILE
+quit
+send previous
+send sfdev  IM_BAT
+print 'IT ' tapedest ' WRITELABEL ' TAPENAME
+print 'yes'
+print 'BA FILE ' MSFILE tapedest
+print 'BA FILE ' CMFILE tapedest
+print 'ET ' tapedest
+send previous
+send sink;listsf;send previous
+print adfile
+print ' '
+print 'IM_BAT contains the following instructions'
+print IM_BAT
+print 'If all okay then READ IM_BAT'
+if (LASTIMG ^= SUCCIMG) then (print '**********WARNING*********'; +
+   print 'The Last Image was not Successful')
+send sink;erasesf imagine;erasesf adfile;send previous

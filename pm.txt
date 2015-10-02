@@ -1,0 +1,77 @@
+send sink
+% PATCHMAGIC version 2.1
+% This program lists all the patches on d000patch into a file
+% It then creates instructions in the file that will copy the
+% patches to the appropriate disks.
+% The resulting file is then displayed on the screen
+% Once manually checked the file can be run using
+% the READ instruction.
+% XPM patches are copied to SLM DPMLD volumes
+% Ordinary patches are copied to the DDU 1 patch volume.
+%
+% PLEASE DO NOT MODIFY THIS PROGRAM IN ANY WAY
+%
+% This program will not erase any patch files
+% It takes time and the screen display, while it is running,
+% looks messy. LEAVE IT ALONE while it runs
+%
+% To run this program type READ PATCHMAGIC
+%
+% variables
+%   PATCHBAT :   filename
+%   export   :   subroutine for copying ordinary patches to DDUpatch directories
+%   exportpx :   subroutine for copying XPM patches to SLMdpmld directories
+%   fsize    :   integer    the number of lines in the file
+%   sline    :   string     holds a line of a file as a symbol
+%
+listsf all
+erasesf PATCHBAT                                        % delete file from sfdev
+send previous
+send sfdev PATCHBAT;listsf all;dskut;liv d000patch all;send previous % file of sfdev and d000patch
+send sink
+erase export                                    % clean out definitions
+erase exportpx                                  % clean out definitions
+command export (print 'copying patch ' (Parname @1) '...'; +
+   copy @1 d010patch)
+command exportpx (print 'copying XPM patch ' (Parname @1) '...'; +
+   copy @1 s00dpmld;copy @1 s01dpmld)
+send previous
+print ' '
+print ' Starting to sift file names, please wait...';sleep 5
+print ' '
+edit PATCHBAT
+end;line->fsize;top;down                    % determine size of file
+repeat fsize (linestr->sline;if((strsize sline) < 14) +
+   then(delete;)else(down;);)               % delete lines shorter than 14 chars
+end;line->fsize;top;down                    % determine new size of file
+repeat fsize (linestr->sline;if((substr sline 8 6) = ('$PATCH')) +
+   then(down;) else (delete;);)             % delete lines that do not
+                                            % contain '$patch '
+print ' '
+print ' Starting to add instructions, please wait...';sleep 5
+print ' '
+top
+while (down '') (change '' ' ')             % insert space before patchnames
+end;line->fsize;top;down                    % determine new size of file
+repeat fsize (linestr->sline;if((substr sline 6 1) = ('X')) +
+   then(change ' ' 'px ');down;)            % insert 'px' at start of lines
+                                            % if character at position 6 is
+                                            % an 'X'
+top
+while (down '') (change '' 'export')        % insert 'export' at start of lines
+input 'print ''PATCHBAT COMPLETE''
+top
+input 'print ''STARTING PATCHBAT''
+file sfdev                                  % save the finished file
+print ' '
+print 'PATCHBAT contains the following instructions'
+print ' '
+print PATCHBAT
+print ' '
+print ' -export-    copies patches to d010patch'
+print ' -exportpx-  copies XPM patches to s00dpmld and s01dpmld'
+print 'PATCHBAT can take a long time and no confirmations are given'
+print '   '
+print 'To transfer the patches simply enter READ PATCHBAT'
+print '                 BE PATIENT'
+
